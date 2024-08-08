@@ -12,7 +12,7 @@ def room(request, room):
     username = request.GET.get('username')
     room_details = Room.objects.filter(name=room).first()
     if room_details is None:
-        return redirect('home')  # Redirect to home or an error page if room does not exist
+        return redirect('home.html')  # Redirect to home or an error page if room does not exist
     return render(request, 'room.html', {
         'username': username,
         'room': room,
@@ -21,11 +21,18 @@ def room(request, room):
 
 
 def checkview(request):
-    room = request.POST['room_name']
-    username = request.POST['username']
+    if request.method == 'POST':
+        room_name = request.POST['room_name']
+        username = request.POST['username']
 
-    room_details, created = Room.objects.get_or_create(name=room)
-    return redirect(f'/{room}/?username={username}')
+        print(f"Room Name: {room_name}, Username: {username}")
+
+        if Room.objects.filter(name=room_name).exists():
+            return redirect(f'/{room_name}/?username={username}')
+        else:
+            new_room = Room.objects.create(name=room_name)
+            new_room.save()
+            return redirect(f'/{room_name}/?username={username}')
 
 
 def send(request):
@@ -33,18 +40,13 @@ def send(request):
     username = request.POST['username']
     room_id = request.POST['room_id']
 
-    room = get_object_or_404(Room, id=room_id)
-    new_message = Message.objects.create(value=message, user=username, room=room)
+    new_message = Message.objects.create(value=message, user=username, room=room_id)
     new_message.save()
     return HttpResponse('Message sent successfully')
 
 
 def getMessages(request, room):
-    try:
-        room_details = get_object_or_404(Room, name=room)
-        messages = Message.objects.filter(room=room_details)
-        message_list = [{"user": msg.user, "value": msg.value, "date": msg.timestamp.strftime("%Y-%m-%d %H:%M:%S")} for
-                        msg in messages]
-        return JsonResponse({"messages": message_list})
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+    room_details = Room.objects.get(name=room)
+
+    messages = Message.objects.filter(room=room_details.id)
+    return JsonResponse({"messages":list(messages.values())})
