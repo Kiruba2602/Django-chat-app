@@ -56,7 +56,7 @@ body {
 </head>
 <body>
 
-<h2>{{room}} - ChatRoom</h2>
+<h2>{{room}} - chatapp</h2>
 
 <div id="display">
 
@@ -69,64 +69,60 @@ body {
 
 <script>
 $(document).ready(function(){
-    function fetchMessages() {
-        $.ajax({
-            type: 'GET',
-            url : `/getMessages/{{room}}/`,
-            success: function(response){
-                console.log(response);
-                $("#display").empty();
-                response.messages.forEach(function(message) {
-                    var messageHtml = `<div class='container darker'>
-                        <b>${message.user}</b>
-                        <p>${message.value}</p>
-                        <span class='time-left'>${message.date}</span>
-                    </div>`;
-                    $("#display").append(messageHtml);
-                });
-            },
-            error: function(response){
-                console.error('An error occurred:', response);
-            }
-        });
-    }
 
-    setInterval(fetchMessages, 1000);
-});
+setInterval(function(){
+    $.ajax({
+        type: 'GET',
+        url : "/getMessages/{{room}}/",
+        success: function(response){
+            console.log(response);
+            $("#display").empty();
+            for (var key in response.messages)
+            {
+                var temp="<div class='container darker'><b>"+response.messages[key].user+"</b><p>"+response.messages[key].value+"</p><span class='time-left'>"+response.messages[key].date+"</span></div>";
+                $("#display").append(temp);
+            }
+        },
+        error: function(response){
+            alert('An error occured')
+        }
+    });
+},1000);
+})
 </script>
 
 
 <div class="container">
     <style>
     input[type=text], select {
-        width: 100%;
-        padding: 12px 20px;
-        margin: 8px 0;
-        display: inline-block;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        box-sizing: border-box;
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
     }
 
     input[type=submit] {
-        width: 100%;
-        background-color: #4CAF50;
-        color: white;
-        padding: 14px 20px;
-        margin: 8px 0;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
+    width: 100%;
+    background-color: #4CAF50;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
     }
 
     input[type=submit]:hover {
-        background-color: #45a049;
+    background-color: #45a049;
     }
 
     div {
-        border-radius: 5px;
-        background-color: #f2f2f2;
-        padding: 20px;
+    border-radius: 5px;
+    background-color: #f2f2f2;
+    padding: 20px;
     }
     </style>
 
@@ -153,16 +149,13 @@ $(document).ready(function(){
           username:$('#username').val(),
           room_id:$('#room_id').val(),
           message:$('#message').val(),
-          csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val(),
+        csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val(),
       },
       success: function(data){
-         fetchMessages();  // Fetch messages again after sending a new message
-         $('#message').val('');  // Clear the message input field
-      },
-      error: function(response){
-          console.error('An error occurred:', response);
+         //alert(data)
       }
     });
+    document.getElementById('message').value = ''
   });
 </script>
 
